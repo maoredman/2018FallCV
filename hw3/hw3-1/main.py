@@ -1,7 +1,6 @@
 import numpy as np
 import cv2
 
-
 # u, v are N-by-2 matrices, representing N corresponding points for v = T(u)
 # this function should return a 3-by-3 homography matrix
 def solve_homography(u, v):
@@ -24,7 +23,6 @@ def solve_homography(u, v):
     U, s, Vh = np.linalg.svd(A.T.dot(A))
     H = U[:,-1].reshape((3,3))
     return H
-
 
 # xxx_corners are 4-by-2 arrays, representing corner (x, y) pairs
 def transform(img, canvas, img_corners, canvas_corners, fill_canvas=False):
@@ -51,8 +49,11 @@ def transform(img, canvas, img_corners, canvas_corners, fill_canvas=False):
                 x = int(round(x))
                 y = int(round(y))
         #         print(img1[y][x])
-                canvas[new_y][new_x] = img[y][x]
-    # TODO: get x,y of img pixels by using H.inv() on canvas coordinates
+                try:
+                    canvas[new_y][new_x] = img[y][x]
+                except:
+                    True
+                    # print('failed when trying to get img ({},{}) onto canvas ({},{})'.format(y,x,new_y,new_x))
 
 def main():
     # Part 1
@@ -69,7 +70,6 @@ def main():
     corners4 = np.array([[808, 495], [892, 495], [802, 609], [896, 609]])
     corners5 = np.array([[1024, 608], [1118, 593], [1032, 664], [1134, 651]])
 
-    # DONE: some magic
     print('Running part 1...')
     h, w, ch = img1.shape
     transform(img1, canvas, img_corners=np.array([[0,0], [w-1,0], [0,h-1], [w-1,h-1]]), canvas_corners=corners1)
@@ -87,7 +87,6 @@ def main():
     # Part 2
     print('Running part 2...')
     img = cv2.imread('./input/screen.jpg')
-    # TODO: some magic
     canvas_qrcode = np.zeros((200, 200, 3))
     h, w, ch = canvas_qrcode.shape
     corners_qrcode = np.array([[1038, 390], [1090, 415], [991, 537], [1040, 576]])
@@ -100,9 +99,20 @@ def main():
     print('    part 2 completed!')
 
     # Part 3
+    print('Running part 3...')
     img_front = cv2.imread('./input/crosswalk_front.jpg')
-    # TODO: some magic
-    # cv2.imwrite('part3.png', output3)
+    img_corners = np.array([[274,156], [518,157], [250,229], [571,230]])
+    x_offset = 200
+    y_offset = 100
+    canvas_crosswalk = np.zeros((300+x_offset, 650+y_offset, 3))
+    canvas_corners = np.array([[185-50+x_offset/2,25+y_offset/2], [498-50+x_offset/2,27+y_offset/2],
+                               [186-50+x_offset/2,273+y_offset/2], [497-50+x_offset/2,273+y_offset/2]])
+    transform(img_front, canvas_crosswalk,
+              img_corners=img_corners,
+              canvas_corners=canvas_corners,
+              fill_canvas=True)
+    cv2.imwrite('part3.png', canvas_crosswalk)
+    print('    part 3 completed!')
 
 
 if __name__ == '__main__':
